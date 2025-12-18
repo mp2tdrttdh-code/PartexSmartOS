@@ -2,55 +2,82 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Ultimate WebOS TV</title>
+<title>PartexSmartOS 16.2 Ultra</title>
 <style>
 /* -------------------- Grundlayout -------------------- */
-body{
+body {
   margin:0;
   font-family:sans-serif;
   background:#0b0b0b;
   color:white;
   overflow:hidden;
+  transition: background 0.3s,color 0.3s;
 }
-h1{text-align:center;margin:15px;font-size:2em;}
-#apps,#appstore,#settingsPanel{
+h1 {
+  text-align:center;
+  margin:15px;
+  font-size:2.2em;
+  letter-spacing:2px;
+}
+/* -------------------- App-Kacheln -------------------- */
+.menu, #appstore, #settingsPanel, #films {
   display:flex;
   justify-content:center;
   flex-wrap:wrap;
-  gap:25px;
-  margin-top:40px;
-  transition:all 0.3s ease;
+  gap:20px;
+  margin-top:30px;
+  transition: all 0.3s ease;
 }
-/* -------------------- App-Kacheln -------------------- */
-.app,.appstoreItem,.settingsOption{
-  width:200px;height:140px;
+.app, .appstoreItem, .settingsOption, .filmItem {
+  width:220px; height:140px;
   background:#222;
-  display:flex;justify-content:center;align-items:center;
+  display:flex; justify-content:center; align-items:center;
   border-radius:15px;
   font-size:18px;
   text-align:center;
   cursor:pointer;
-  transition:transform 0.3s,box-shadow 0.3s,background 0.2s;
+  transition: transform 0.3s, box-shadow 0.3s, background 0.2s;
   box-shadow:0 0 10px rgba(0,0,0,0.5);
+  position:relative;
+  overflow:hidden;
 }
-.app.focused,.appstoreItem.focused,.settingsOption.focused{
+.app.focused, .appstoreItem.focused, .settingsOption.focused, .filmItem.focused {
   outline:4px solid #00aaff;
   transform:scale(1.15) rotateX(5deg);
-  box-shadow:0 10px 20px rgba(0,170,255,0.5);
+  box-shadow:0 10px 25px rgba(0,170,255,0.7);
 }
+@keyframes pulse {0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);}}
+.app.focused, .filmItem.focused {animation:pulse 1s infinite;}
+
 /* -------------------- Overlay -------------------- */
-#screen{
-  position:absolute;top:0;left:0;right:0;bottom:0;
+#screen {
+  position:absolute; top:0; left:0; right:0; bottom:0;
   background:#000;
-  display:none;flex-direction:column;
-  justify-content:center;align-items:center;color:white;
+  display:none; flex-direction:column;
+  justify-content:center; align-items:center;
+  color:white;
+  animation: fadeIn 0.5s;
 }
-#screen iframe,#screen video{width:85%;height:70%;border:none;border-radius:10px;}
-#back{margin-top:20px;padding:12px 25px;background:#00aaff;border:none;border-radius:10px;cursor:pointer;font-size:18px;}
-/* -------------------- App Store & Settings -------------------- */
-#settingsPanel,#appstore{
+#screen iframe, #screen video {
+  width:85%; height:70%;
+  border:none;
+  border-radius:12px;
+}
+#back {
+  margin-top:20px;
+  padding:12px 25px;
+  background:#00aaff;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:18px;
+}
+
+/* -------------------- AppStore & Settings -------------------- */
+#settingsPanel, #appstore {
   display:none;
-  position:absolute;top:10%;left:50%;
+  position:absolute;
+  top:10%; left:50%;
   transform:translateX(-50%);
   width:70%;
   background:#111;
@@ -58,37 +85,35 @@ h1{text-align:center;margin:15px;font-size:2em;}
   border-radius:15px;
   box-shadow:0 0 20px rgba(0,0,0,0.7);
 }
-.appstoreItem,.settingsOption{
-  margin:8px 0;
-}
-.appstoreItem:hover,.settingsOption:hover{
-  background:#333;transform:scale(1.05);
-}
-/* -------------------- Animationen -------------------- */
-@keyframes pulse{
-  0%{transform:scale(1);}
-  50%{transform:scale(1.05);}
-  100%{transform:scale(1);}
-}
-.app.focused{animation:pulse 1s infinite;}
+.appstoreItem, .settingsOption {margin:8px 0; padding:12px; border-radius:10px;}
+.appstoreItem:hover, .settingsOption:hover {background:#333; transform:scale(1.05);}
+
+/* -------------------- Film-Simulation -------------------- */
+#films {display:none; flex-direction:row; overflow-x:auto; padding:10px;}
+.filmItem {width:200px; height:300px; flex-shrink:0; background-size:cover; background-position:center; font-size:16px; color:white; justify-content:flex-end; align-items:flex-end; padding:10px; box-shadow:0 0 10px rgba(0,0,0,0.5);}
+.filmItem.focused {outline:4px solid #00aaff;}
+
+/* -------------------- Animation -------------------- */
+@keyframes fadeIn {from{opacity:0;} to{opacity:1;}}
 </style>
 </head>
 <body>
-
-<h1>Ultimate WebOS TV</h1>
+<h1>PartexSmartOS 16.2 Ultra</h1>
 
 <!-- Startscreen -->
-<div id="apps">
+<div class="menu" id="apps">
   <div class="app focused" data-app="youtube">YouTube</div>
   <div class="app" data-app="browser">Browser</div>
   <div class="app" data-app="media">Media</div>
   <div class="app" data-app="store">App Store</div>
   <div class="app" data-app="settings">Settings</div>
+  <div class="app" data-app="films">Filme</div>
 </div>
 
 <!-- Overlay für Apps -->
 <div id="screen">
   <iframe id="appframe"></iframe>
+  <video id="videoPlayer" controls style="display:none;"></video>
   <button id="back">Zurück</button>
 </div>
 
@@ -113,81 +138,102 @@ h1{text-align:center;margin:15px;font-size:2em;}
   <div class="settingsOption" data-setting="volumeDown">Lautstärke -</div>
 </div>
 
+<!-- Film-Simulation -->
+<div id="films">
+  <div class="filmItem focused" data-video="https://www.w3schools.com/html/mov_bbb.mp4" style="background-image:url('https://picsum.photos/id/1015/200/300');">Film 1</div>
+  <div class="filmItem" data-video="https://www.w3schools.com/html/movie.mp4" style="background-image:url('https://picsum.photos/id/1016/200/300');">Film 2</div>
+  <div class="filmItem" data-video="https://www.w3schools.com/html/mov_bbb.mp4" style="background-image:url('https://picsum.photos/id/1018/200/300');">Film 3</div>
+  <div class="filmItem" data-video="https://www.w3schools.com/html/movie.mp4" style="background-image:url('https://picsum.photos/id/1019/200/300');">Film 4</div>
+</div>
+
 <script>
-// -------------------- Fokus & Navigation --------------------
-const apps = document.querySelectorAll('.app');
+// -------------------- Fokus Navigation --------------------
+let menuItems = document.querySelectorAll('.app');
 let current=0;
 function updateFocus(){
-  apps.forEach(a=>a.classList.remove('focused'));
-  apps[current].classList.add('focused');
-  apps[current].focus();
+  menuItems.forEach(a=>a.classList.remove('focused'));
+  menuItems[current].classList.add('focused');
+  menuItems[current].focus();
 }
 updateFocus();
 
-// -------------------- Öffnen von Apps --------------------
+// -------------------- Overlay und AppStore --------------------
 const screen=document.getElementById('screen');
 const frame=document.getElementById('appframe');
-const appContainer=document.getElementById('apps');
+const videoPlayer=document.getElementById('videoPlayer');
 const backBtn=document.getElementById('back');
+const appContainer=document.getElementById('apps');
 const appstore=document.getElementById('appstore');
 const settingsPanel=document.getElementById('settingsPanel');
+const filmsDiv=document.getElementById('films');
 
-let volume=50; // simulierte Lautstärke
+let volume=50;
+let filmCurrent=0;
+let filmItems=document.querySelectorAll('.filmItem');
 
 function openApp(app){
   appContainer.style.display='none';
   appstore.style.display='none';
   settingsPanel.style.display='none';
+  filmsDiv.style.display='none';
   screen.style.display='flex';
+  frame.style.display='none';
+  videoPlayer.style.display='none';
 
   switch(app){
-    case 'youtube': frame.src='https://www.youtube.com/embed?autoplay=1'; break;
-    case 'browser': frame.src='https://example.com'; break;
-    case 'media': frame.src='https://www.w3schools.com/html/mov_bbb.mp4'; break;
+    case 'youtube': frame.src='https://www.youtube.com/embed?autoplay=1'; frame.style.display='block'; break;
+    case 'browser': frame.src='https://example.com'; frame.style.display='block'; break;
+    case 'media': videoPlayer.src='https://www.w3schools.com/html/mov_bbb.mp4'; videoPlayer.style.display='block'; videoPlayer.play(); break;
     case 'store': screen.style.display='none'; appstore.style.display='flex'; break;
     case 'settings': screen.style.display='none'; settingsPanel.style.display='flex'; break;
-    case 'weather': frame.src='https://wttr.in/?format=3'; screen.style.display='flex'; break;
-    case 'calculator': frame.src='data:text/html,<h1>Rechner</h1><p>Platzhalter</p>'; screen.style.display='flex'; break;
-    case 'notes': frame.src='data:text/html,<h1>Notizen</h1><textarea style="width:100%;height:80%;"></textarea>'; screen.style.display='flex'; break;
+    case 'films': screen.style.display='none'; filmsDiv.style.display='flex'; filmItems[filmCurrent].classList.add('focused'); break;
+    case 'weather': frame.src='https://wttr.in/?format=3'; frame.style.display='block'; break;
+    case 'calculator': frame.src='data:text/html,<h1>Rechner</h1>'; frame.style.display='block'; break;
+    case 'notes': frame.src='data:text/html,<h1>Notizen</h1><textarea style="width:100%;height:80%;"></textarea>'; frame.style.display='block'; break;
   }
 }
 
-// -------------------- Tastatur & Controller --------------------
-document.addEventListener('keydown',e=>{
-  if(screen.style.display==='flex' || appstore.style.display==='flex' || settingsPanel.style.display==='flex'){
-    if(e.key==='Escape'||e.key==='Backspace'){
-      screen.style.display='none'; appstore.style.display='none'; settingsPanel.style.display='none'; appContainer.style.display='flex';
-      updateFocus();
-    }
+// -------------------- Tastatur / Controller --------------------
+document.addEventListener('keydown', e=>{
+  if(screen.style.display==='flex'){
+    if(e.key==='Escape'||e.key==='Backspace'){screen.style.display='none'; appContainer.style.display='flex'; frame.src=''; videoPlayer.pause();}
     return;
   }
-  if(e.key==='ArrowRight'){ current++; if(current>=apps.length) current=apps.length-1; updateFocus(); }
-  if(e.key==='ArrowLeft'){ current--; if(current<0) current=0; updateFocus(); }
-  if(e.key==='Enter'){ openApp(apps[current].dataset.app); }
+  if(appstore.style.display==='flex' || settingsPanel.style.display==='flex'){if(e.key==='Escape'||e.key==='Backspace'){appstore.style.display='none'; settingsPanel.style.display='none'; appContainer.style.display='flex'; updateFocus();} return;}
+  if(filmsDiv.style.display==='flex'){
+    filmItems.forEach(f=>f.classList.remove('focused'));
+    if(e.key==='ArrowRight'){filmCurrent++; if(filmCurrent>=filmItems.length) filmCurrent=filmItems.length-1;}
+    if(e.key==='ArrowLeft'){filmCurrent--; if(filmCurrent<0) filmCurrent=0;}
+    filmItems[filmCurrent].classList.add('focused');
+    if(e.key==='Enter'){openApp(filmItems[filmCurrent].dataset.video);}
+    return;
+  }
+  if(e.key==='ArrowRight'){current++; if(current>=menuItems.length)current=menuItems.length-1; updateFocus();}
+  if(e.key==='ArrowLeft'){current--; if(current<0)current=0; updateFocus();}
+  if(e.key==='Enter'){openApp(menuItems[current].dataset.app);}
 });
 
 // -------------------- Back Button --------------------
-backBtn.addEventListener('click',()=>{
-  screen.style.display='none'; appContainer.style.display='flex'; updateFocus();
-});
+backBtn.addEventListener('click', ()=>{screen.style.display='none'; appContainer.style.display='flex'; frame.src=''; videoPlayer.pause(); updateFocus();});
 
 // -------------------- AppStore Klick --------------------
-document.querySelectorAll('.appstoreItem').forEach(item=>item.addEventListener('click',()=>{openApp(item.dataset.app);}));
-// -------------------- Einstellungen Klick --------------------
+document.querySelectorAll('.appstoreItem').forEach(item=>{item.addEventListener('click',()=>{openApp(item.dataset.app);});});
+
+// -------------------- Settings Klick --------------------
 document.querySelectorAll('.settingsOption').forEach(opt=>{
   opt.addEventListener('click',()=>{
     switch(opt.dataset.setting){
       case 'themeLight': document.body.style.background='#eee'; document.body.style.color='#111'; break;
       case 'themeDark': document.body.style.background='#0b0b0b'; document.body.style.color='white'; break;
-      case 'fullscreen':
-        if(!document.fullscreenElement){document.documentElement.requestFullscreen();}
-        else{document.exitFullscreen();}
-        break;
+      case 'fullscreen': if(!document.fullscreenElement){document.documentElement.requestFullscreen();}else{document.exitFullscreen();} break;
       case 'volumeUp': volume=Math.min(volume+10,100); alert('Lautstärke: '+volume); break;
       case 'volumeDown': volume=Math.max(volume-10,0); alert('Lautstärke: '+volume); break;
     }
   });
 });
+
+// -------------------- Film Item Klick --------------------
+filmItems.forEach((f,i)=>{f.addEventListener('click',()=>{filmCurrent=i; openApp(f.dataset.video);});});
 </script>
 </body>
 </html>
