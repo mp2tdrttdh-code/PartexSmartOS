@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Ultimate WebOS TV</title>
+<style>
+/* -------------------- Grundlayout -------------------- */
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:#0b0b0b;
+  color:white;
+  overflow:hidden;
+}
+h1{text-align:center;margin:15px;font-size:2em;}
+#apps,#appstore,#settingsPanel{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:25px;
+  margin-top:40px;
+  transition:all 0.3s ease;
+}
+/* -------------------- App-Kacheln -------------------- */
+.app,.appstoreItem,.settingsOption{
+  width:200px;height:140px;
+  background:#222;
+  display:flex;justify-content:center;align-items:center;
+  border-radius:15px;
+  font-size:18px;
+  text-align:center;
+  cursor:pointer;
+  transition:transform 0.3s,box-shadow 0.3s,background 0.2s;
+  box-shadow:0 0 10px rgba(0,0,0,0.5);
+}
+.app.focused,.appstoreItem.focused,.settingsOption.focused{
+  outline:4px solid #00aaff;
+  transform:scale(1.15) rotateX(5deg);
+  box-shadow:0 10px 20px rgba(0,170,255,0.5);
+}
+/* -------------------- Overlay -------------------- */
+#screen{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:#000;
+  display:none;flex-direction:column;
+  justify-content:center;align-items:center;color:white;
+}
+#screen iframe,#screen video{width:85%;height:70%;border:none;border-radius:10px;}
+#back{margin-top:20px;padding:12px 25px;background:#00aaff;border:none;border-radius:10px;cursor:pointer;font-size:18px;}
+/* -------------------- App Store & Settings -------------------- */
+#settingsPanel,#appstore{
+  display:none;
+  position:absolute;top:10%;left:50%;
+  transform:translateX(-50%);
+  width:70%;
+  background:#111;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 0 20px rgba(0,0,0,0.7);
+}
+.appstoreItem,.settingsOption{
+  margin:8px 0;
+}
+.appstoreItem:hover,.settingsOption:hover{
+  background:#333;transform:scale(1.05);
+}
+/* -------------------- Animationen -------------------- */
+@keyframes pulse{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.05);}
+  100%{transform:scale(1);}
+}
+.app.focused{animation:pulse 1s infinite;}
+</style>
+</head>
+<body>
+
+<h1>Ultimate WebOS TV</h1>
+
+<!-- Startscreen -->
+<div id="apps">
+  <div class="app focused" data-app="youtube">YouTube</div>
+  <div class="app" data-app="browser">Browser</div>
+  <div class="app" data-app="media">Media</div>
+  <div class="app" data-app="store">App Store</div>
+  <div class="app" data-app="settings">Settings</div>
+</div>
+
+<!-- Overlay für Apps -->
+<div id="screen">
+  <iframe id="appframe"></iframe>
+  <button id="back">Zurück</button>
+</div>
+
+<!-- AppStore -->
+<div id="appstore">
+  <h2>App Store</h2>
+  <div class="appstoreItem" data-app="weather">Wetter</div>
+  <div class="appstoreItem" data-app="calculator">Rechner</div>
+  <div class="appstoreItem" data-app="notes">Notizen</div>
+  <div class="appstoreItem" data-app="youtube">YouTube</div>
+  <div class="appstoreItem" data-app="browser">Browser</div>
+  <div class="appstoreItem" data-app="media">Media</div>
+</div>
+
+<!-- Einstellungen -->
+<div id="settingsPanel">
+  <h2>Einstellungen</h2>
+  <div class="settingsOption" data-setting="themeLight">Helles Theme</div>
+  <div class="settingsOption" data-setting="themeDark">Dunkles Theme</div>
+  <div class="settingsOption" data-setting="fullscreen">Fullscreen wechseln</div>
+  <div class="settingsOption" data-setting="volumeUp">Lautstärke +</div>
+  <div class="settingsOption" data-setting="volumeDown">Lautstärke -</div>
+</div>
+
+<script>
+// -------------------- Fokus & Navigation --------------------
+const apps = document.querySelectorAll('.app');
+let current=0;
+function updateFocus(){
+  apps.forEach(a=>a.classList.remove('focused'));
+  apps[current].classList.add('focused');
+  apps[current].focus();
+}
+updateFocus();
+
+// -------------------- Öffnen von Apps --------------------
+const screen=document.getElementById('screen');
+const frame=document.getElementById('appframe');
+const appContainer=document.getElementById('apps');
+const backBtn=document.getElementById('back');
+const appstore=document.getElementById('appstore');
+const settingsPanel=document.getElementById('settingsPanel');
+
+let volume=50; // simulierte Lautstärke
+
+function openApp(app){
+  appContainer.style.display='none';
+  appstore.style.display='none';
+  settingsPanel.style.display='none';
+  screen.style.display='flex';
+
+  switch(app){
+    case 'youtube': frame.src='https://www.youtube.com/embed?autoplay=1'; break;
+    case 'browser': frame.src='https://example.com'; break;
+    case 'media': frame.src='https://www.w3schools.com/html/mov_bbb.mp4'; break;
+    case 'store': screen.style.display='none'; appstore.style.display='flex'; break;
+    case 'settings': screen.style.display='none'; settingsPanel.style.display='flex'; break;
+    case 'weather': frame.src='https://wttr.in/?format=3'; screen.style.display='flex'; break;
+    case 'calculator': frame.src='data:text/html,<h1>Rechner</h1><p>Platzhalter</p>'; screen.style.display='flex'; break;
+    case 'notes': frame.src='data:text/html,<h1>Notizen</h1><textarea style="width:100%;height:80%;"></textarea>'; screen.style.display='flex'; break;
+  }
+}
+
+// -------------------- Tastatur & Controller --------------------
+document.addEventListener('keydown',e=>{
+  if(screen.style.display==='flex' || appstore.style.display==='flex' || settingsPanel.style.display==='flex'){
+    if(e.key==='Escape'||e.key==='Backspace'){
+      screen.style.display='none'; appstore.style.display='none'; settingsPanel.style.display='none'; appContainer.style.display='flex';
+      updateFocus();
+    }
+    return;
+  }
+  if(e.key==='ArrowRight'){ current++; if(current>=apps.length) current=apps.length-1; updateFocus(); }
+  if(e.key==='ArrowLeft'){ current--; if(current<0) current=0; updateFocus(); }
+  if(e.key==='Enter'){ openApp(apps[current].dataset.app); }
+});
+
+// -------------------- Back Button --------------------
+backBtn.addEventListener('click',()=>{
+  screen.style.display='none'; appContainer.style.display='flex'; updateFocus();
+});
+
+// -------------------- AppStore Klick --------------------
+document.querySelectorAll('.appstoreItem').forEach(item=>item.addEventListener('click',()=>{openApp(item.dataset.app);}));
+// -------------------- Einstellungen Klick --------------------
+document.querySelectorAll('.settingsOption').forEach(opt=>{
+  opt.addEventListener('click',()=>{
+    switch(opt.dataset.setting){
+      case 'themeLight': document.body.style.background='#eee'; document.body.style.color='#111'; break;
+      case 'themeDark': document.body.style.background='#0b0b0b'; document.body.style.color='white'; break;
+      case 'fullscreen':
+        if(!document.fullscreenElement){document.documentElement.requestFullscreen();}
+        else{document.exitFullscreen();}
+        break;
+      case 'volumeUp': volume=Math.min(volume+10,100); alert('Lautstärke: '+volume); break;
+      case 'volumeDown': volume=Math.max(volume-10,0); alert('Lautstärke: '+volume); break;
+    }
+  });
+});
+</script>
+</body>
+</html>
